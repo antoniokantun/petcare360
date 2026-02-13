@@ -8,10 +8,9 @@ import { Pencil, Trash2, Eye, UserPlus } from 'lucide-vue-next';
 interface Client {
     id: number;
     name: string;
+    lastname?:string;
     email:string;
     phone:string;
-    pets?:Array<any>;
-
 }
 
 defineProps<{
@@ -57,8 +56,10 @@ const getInitials = (name:string) => name.slice(0,2).toUpperCase();
                                         <div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
                                             {{ getInitials(client.name) }}
                                         </div>
+
                                         <div class="flex flex-col">
                                             <span class="font-medium">{{ client.name }}</span>
+                                            <span class="font-medium">{{ client.lastname }}</span>
                                             <span class="text-xs text-gray-500">{{ client.email || 'Sin email' }}</span>
                                         </div>
                                     </div>

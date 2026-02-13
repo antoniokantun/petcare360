@@ -5,25 +5,27 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Client;
+use App\Models\Pet;
 
-class ClientController extends Controller
+class PetController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return Inertia::render('Clients/Index',[
-            'clients' => Client::latest()->simplePaginate(10)
-        ]);
+        //
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create( Request $request)
     {
-        return Inertia::render('Clients/Create');
+        $client = Client::findOrFail($request->client_id);
+        return Inertia::render('Pets/Create', [
+            'client' => $client
+        ]);
     }
 
     /**
@@ -33,26 +35,24 @@ class ClientController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'phone' => ['required', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
-            'email'=> 'nullable|email',
-            'address'=> 'nullable|string',
+            'species'=> 'required|string|max:255',
+            'breed' => 'nullable|string',
+            'age' => 'nullable|integer',
+            'weight' => 'nullable|numeric',
+            'client_id' => 'required|exists:clients,id',
         ]);
 
-        $validated['phone'] = preg_replace('/\D+/', '', $validated['phone']);
+        Pet::create($validated);
 
-        Client::create($validated);
-        return redirect()->route('clients.index');
+        return redirect()->route('clients.show', $request->client_id);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Client $client)
+    public function show(string $id)
     {
-        return Inertia::render('Clients/Show', [
-            'client' => $client->load('pets')
-        ]);
+        //
     }
 
     /**

@@ -6,22 +6,49 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Save, ArrowLeft } from 'lucide-vue-next';
+import { watch, ref } from 'vue';
 
-// 1. useForm es el "superpoder" de Inertia.
-// Maneja los valores, el envío y los errores de validación automáticamente.
+// 1. useForm de Inertia.
 const form = useForm({
     name: '',
+    lastname:'',
     email: '',
     phone: '',
     address: ''
 });
 
-// 2. Función para enviar el formulario
+const phoneClientError = ref('');
+
 const submit = () => {
+    const digits = form.phone.replace(/\s/g, '');
+    if (digits.length < 10) {
+        phoneClientError.value = 'El teléfono solo debe contener números.';
+        return;
+    }
+
+    phoneClientError.value = '';
+    form.phone = digits;
+
     form.post(route('clients.store'), {
-        onFinish: () => form.reset(),
+        onSuccess: () => form.reset(),
     });
 };
+
+watch(() => form.phone, (newValue) => {
+    let digits = newValue.replace(/\s/g, '');
+    let formatted = '';
+    if (digits.length > 0) {
+        formatted += digits.substring(0, 2);
+    }
+    if (digits.length > 2) {
+        formatted += ' ' + digits.substring(2, 6);
+    }
+    if (digits.length > 6) {
+        formatted += ' ' + digits.substring(6, 10);
+    }
+    form.phone = formatted;
+});
+
 </script>
 
 <template>
@@ -35,7 +62,7 @@ const submit = () => {
                         <ArrowLeft class="w-4 h-4" />
                     </Button>
                 </Link>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Registrar Nuevo Cliente</h2>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Registrar nuevo cliente</h2>
             </div>
         </template>
 
@@ -46,14 +73,24 @@ const submit = () => {
                     <form @submit.prevent="submit" class="space-y-6">
 
                         <div class="space-y-2">
-                            <Label for="name">Nombre Completo *</Label>
+                            <Label for="name">Nombre *</Label>
                             <Input
                                 id="name"
                                 v-model="form.name"
-                                placeholder="Ej: Juan Pérez"
+                                placeholder="Ej: Juan Carlos"
                                 :class="{ 'border-red-500': form.errors.name }"
                             />
                             <p v-if="form.errors.name" class="text-sm text-red-500">{{ form.errors.name }}</p>
+                        </div>
+                        <div class="space-y-2">
+                            <Label for="lastaname">Apellido</Label>
+                            <Input
+                                id="lastname"
+                                v-model="form.lastname"
+                                placeholder="Ej: Pérez Luna"
+                                :class="{ 'border-red-500': form.errors.lastname }"
+                            />
+                            <p v-if="form.errors.lastname" class="text-sm text-red-500">{{ form.errors.lastname }}</p>
                         </div>
 
                         <div class="space-y-2">
@@ -62,8 +99,10 @@ const submit = () => {
                                 id="phone"
                                 v-model="form.phone"
                                 placeholder="Ej: 55 1234 5678"
+                                maxlength="12"
                             />
-                            <p v-if="form.errors.phone" class="text-sm text-red-500">{{ form.errors.phone }}</p>
+                            <p v-if="phoneClientError" class="text-sm text-red-500">{{ phoneClientError}}</p>
+                            <p v-else-if="form.errors.phone" class="text-sm text-red-500">{{ form.errors.phone }}</p>
                         </div>
 
                         <div class="space-y-2">
